@@ -7,6 +7,8 @@ const app = express();
 
 app.use(express.json());
 app.use('/news', require('./routes/news.route'));
+app.use('/bookmarks', require('./routes/bookmarks.route'));
+app.use('/auth', require('./routes/auth.route'));
 
 const PORT = process.env.PORT || 3000;
 

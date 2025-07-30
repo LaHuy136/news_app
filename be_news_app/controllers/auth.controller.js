@@ -1,0 +1,47 @@
+const authService = require('../services/auth.service');
+
+const register = async (req, res) => {
+    try {
+        const data = await authService.register(req.body);
+        res.status(201).json(data);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+};
+
+const login = async (req, res) => {
+    try {
+        const data = await authService.login(req.body);
+        res.json(data);
+    } catch (err) {
+        res.status(401).json({ message: err.message });
+    }
+};
+
+
+const requestOTP = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const result = await authService.requestPasswordReset(email);
+        res.json(result);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+};
+
+const resetPassword = async (req, res) => {
+    try {
+        const { email, otp, newPassword } = req.body;
+        const result = await authService.resetPasswordWithOTP(email, otp, newPassword);
+        res.json(result);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+};
+
+module.exports = {
+    register,
+    login,
+    requestOTP,
+    resetPassword,
+};

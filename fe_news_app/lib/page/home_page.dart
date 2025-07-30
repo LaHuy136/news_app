@@ -8,7 +8,6 @@ import 'package:fe_news_app/screen/web_view_screen.dart';
 import 'package:fe_news_app/services/news_service.dart';
 import 'package:fe_news_app/theme/color_theme.dart';
 import 'package:fe_news_app/theme/text_styles.dart';
-import 'package:fe_news_app/widgets/bottom_navbar.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -26,18 +25,18 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    loadTrendingNews();
+    fetchNews();
   }
 
-  Future<void> loadTrendingNews() async {
+  Future<void> fetchNews() async {
     try {
-      final data = await NewsService.getNewsByCategory('noi-bat-vnexpress');
+      final result = await NewsService.getNewsByCategory('noi-bat-vnexpress');
       setState(() {
-        trendingNews = data;
+        trendingNews = result;
         isLoading = false;
       });
     } catch (e) {
-      print('Error loading news: $e');
+      print('Lỗi khi gọi API: $e');
       setState(() {
         isLoading = false;
       });
@@ -109,7 +108,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ],
               ),
-      bottomNavigationBar: BottomNavbar(),
+      // bottomNavigationBar: MyBottomNavbar(),
     );
   }
 
@@ -220,23 +219,38 @@ class _HomePageState extends State<HomePage> {
 
         // Info row
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Image.asset('assets/images/vnexpress.png', width: 18, height: 18),
-            const SizedBox(width: 4),
-            Text(
-              trendingItem?['source'] ?? 'VNExpress',
-              style: TextStyles.textXSmall.copyWith(
-                color: ColorTheme.bodyText,
-                fontWeight: FontWeight.w600,
-              ),
+            Row(
+              children: [
+                Image.asset(
+                  'assets/images/vnexpress.png',
+                  width: 18,
+                  height: 18,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  trendingItem?['source'] ?? 'VNExpress',
+                  style: TextStyles.textXSmall.copyWith(
+                    color: ColorTheme.bodyText,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Icon(Icons.schedule, size: 14),
+                const SizedBox(width: 4),
+                Text(
+                  formatTimeAgo(trendingItem?['pubDate']),
+                  style: TextStyles.textXSmall.copyWith(
+                    color: ColorTheme.bodyText,
+                  ),
+                ),
+              ],
             ),
+
+            // Bookmark
             const SizedBox(width: 8),
-            const Icon(Icons.schedule, size: 14),
-            const SizedBox(width: 4),
-            Text(
-              formatTimeAgo(trendingItem?['pubDate']),
-              style: TextStyles.textXSmall.copyWith(color: ColorTheme.bodyText),
-            ),
+            const Icon(Icons.bookmark_outline_outlined, size: 24),
           ],
         ),
         const SizedBox(height: 24),
@@ -268,7 +282,6 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
         ),
-        const SizedBox(height: 16),
       ],
     );
   }

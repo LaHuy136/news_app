@@ -1,3 +1,4 @@
+import 'package:fe_news_app/theme/text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -27,7 +28,12 @@ class _WebViewScreenState extends State<WebViewScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title ?? 'Chi tiết tin tức')),
+      appBar: AppBar(
+        title: Text(
+          widget.title ?? 'Chi tiết tin tức',
+          style: TextStyles.textMedium,
+        ),
+      ),
       body: WebViewWidget(controller: _controller),
     );
   }

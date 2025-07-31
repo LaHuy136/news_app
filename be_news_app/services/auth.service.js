@@ -102,9 +102,24 @@ const resetPasswordWithOTP = async (email, otp, newPassword) => {
     return { message: 'Password updated successfully' };
 };
 
+const verifyCode = async (email, otp) => {
+    const record = await OTPVerification.findOne({ where: { email, otp } });
+
+    if (!record) throw new Error('Invalid OTP');
+
+    if (new Date() > record.expiresAt) {
+        await OTPVerification.destroy({ where: { email, otp } });
+        throw new Error('OTP expired');
+    }
+
+    return { message: 'OTP is valid' };
+};
+
+
 module.exports = {
     register,
     login,
     requestPasswordReset,
     resetPasswordWithOTP,
+    verifyCode,
 };

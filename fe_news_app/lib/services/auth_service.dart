@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -41,19 +43,14 @@ class AuthService {
     }
   }
 
-  static Future<String> requestOTP(String email) async {
+  static Future<bool> requestOTP(String email) async {
     final response = await http.post(
       Uri.parse('$baseUrl/request-otp'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'email': email}),
     );
 
-    final data = jsonDecode(response.body);
-    if (response.statusCode == 200) {
-      return data['message'] ?? 'OTP đã được gửi';
-    } else {
-      throw Exception(data['message'] ?? 'Gửi OTP thất bại');
-    }
+    return response.statusCode == 200;
   }
 
   static Future<String> resetPassword(
@@ -76,6 +73,29 @@ class AuthService {
       return data['message'] ?? 'Đặt lại mật khẩu thành công';
     } else {
       throw Exception(data['message'] ?? 'Đặt lại mật khẩu thất bại');
+    }
+  }
+
+  static Future<bool> verifyCode(String email, String otp) async {
+    final url = Uri.parse('$baseUrl/verify-code');
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'otp': otp}),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        final data = jsonDecode(response.body);
+        print('Lỗi xác minh: ${data['error']}');
+        return false;
+      }
+    } catch (e) {
+      print('Lỗi: $e');
+      return false;
     }
   }
 }

@@ -2,7 +2,6 @@
 
 import 'package:fe_news_app/theme/color_theme.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 
 class MyBottomNavbar extends StatefulWidget {
   const MyBottomNavbar({super.key});
@@ -28,19 +27,28 @@ class _MyBottomNavbarState extends State<MyBottomNavbar> {
             children: [
               buildNavItem(
                 context,
-                svgPath: 'assets/icons/home.svg',
+                icon:
+                    currentRoute == '/home'
+                        ? Icons.home_rounded
+                        : Icons.home_outlined,
                 route: '/home',
                 currentRoute: currentRoute,
               ),
               buildNavItem(
                 context,
-                svgPath: 'assets/icons/calendar.svg',
-                route: '/calendar',
+                icon:
+                    currentRoute == '/bookmark'
+                        ? Icons.bookmark_rounded
+                        : Icons.bookmark_outline_outlined,
+                route: '/bookmark',
                 currentRoute: currentRoute,
               ),
               buildNavItem(
                 context,
-                svgPath: 'assets/icons/profile.svg',
+                icon:
+                    currentRoute == '/profile'
+                        ? Icons.person_rounded
+                        : Icons.person_outline_outlined,
                 route: '/profile',
                 currentRoute: currentRoute,
               ),
@@ -53,12 +61,12 @@ class _MyBottomNavbarState extends State<MyBottomNavbar> {
 
   Widget buildNavItem(
     BuildContext context, {
-    required String svgPath,
+    required IconData icon,
     required String route,
     required String? currentRoute,
   }) {
     final isSelected = route == currentRoute;
-    final color = isSelected ? ColorTheme.primaryColor : ColorTheme.primaryColor;
+    final color = isSelected ? ColorTheme.primaryColor : ColorTheme.bodyText;
 
     return GestureDetector(
       onTap: () => Navigator.pushReplacementNamed(context, route),
@@ -67,7 +75,8 @@ class _MyBottomNavbarState extends State<MyBottomNavbar> {
           borderRadius: BorderRadius.circular(12),
           color: Colors.transparent,
         ),
-        child: SvgPicture.asset(svgPath, width: 28, height: 28, color: color),
+        // child: SvgPicture.asset(svgPath, width: 28, height: 28, color: color),
+        child: Icon(icon, size: 28, color: color),
       ),
     );
   }

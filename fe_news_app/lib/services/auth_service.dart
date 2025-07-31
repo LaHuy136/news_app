@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
   static const String baseUrl = 'http://192.168.38.126:3000/auth';
@@ -37,10 +38,27 @@ class AuthService {
 
     final data = jsonDecode(response.body);
     if (response.statusCode == 200) {
+      final token = data['token'];
+
+      if (token != null) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('token', token);
+      }
+
       return data;
     } else {
       throw Exception(data['message'] ?? 'Đăng nhập thất bại');
     }
+  }
+
+  static Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('token');
+  }
+
+  static Future<void> logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
   }
 
   static Future<bool> requestOTP(String email) async {

@@ -5,6 +5,7 @@ import 'package:fe_news_app/components/elevated_button.dart';
 import 'package:fe_news_app/components/text_formfield.dart';
 import 'package:fe_news_app/services/auth_service.dart';
 import 'package:fe_news_app/theme/color_theme.dart';
+import 'package:fe_news_app/theme/text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -73,7 +74,7 @@ class _SignUpState extends State<SignUp> {
                       fontSize: 16,
                     ),
                   ),
-              
+
                   const SizedBox(height: 50),
                   Center(
                     child: const Text(
@@ -185,8 +186,10 @@ class _SignUpState extends State<SignUp> {
                   Text('—', style: TextStyle(color: ColorTheme.primaryColor)),
                   const SizedBox(width: 6),
                   Text(
-                    'hoặc Đăng nhập với',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+                    'hoặc đăng nhập với',
+                    style: TextStyles.textMedium.copyWith(
+                      fontWeight: FontWeight.w400,
+                    ),
                   ),
                   const SizedBox(width: 6),
                   Text('—', style: TextStyle(color: ColorTheme.primaryColor)),

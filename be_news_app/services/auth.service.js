@@ -56,6 +56,30 @@ const login = async ({ email, password }) => {
     };
 };
 
+const updateUserInfo = async (userId, updateData) => {
+    const user = await Users.findByPk(userId);
+    if (!user) throw new Error('User not found');
+
+    user.email = updateData.email || user.email;
+    user.username = updateData.username || user.username;
+
+    await user.save();
+    return user;
+};
+
+
+const getUserById = async (userId) => {
+    const user = await Users.findByPk(userId, {
+        attributes: ['id', 'email', 'username'],
+    });
+
+    if (!user) throw new Error('User not found');
+    return user;
+};
+
+
+
+
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
 const transporter = nodemailer.createTransport({
@@ -122,4 +146,6 @@ module.exports = {
     requestPasswordReset,
     resetPasswordWithOTP,
     verifyCode,
+    updateUserInfo,
+    getUserById,
 };

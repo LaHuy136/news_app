@@ -20,7 +20,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  TextEditingController searchController = TextEditingController();
   List<dynamic> trendingNews = [];
   bool isLoading = true;
   Set<String> bookmarkedLinks = {};
@@ -105,10 +104,6 @@ class _HomePageState extends State<HomePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Search Field
-                          buildSearchTextField(context),
-                          const SizedBox(height: 16),
-
                           // Trending section + image + info
                           buildTrendingSection(trendingItem, isBookmarked),
                           const SizedBox(height: 24),
@@ -128,23 +123,6 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
       bottomNavigationBar: MyBottomNavbar(),
-    );
-  }
-
-  Widget buildSearchTextField(BuildContext context) {
-    return TextField(
-      controller: searchController,
-      decoration: InputDecoration(
-        prefixIcon: Icon(Icons.search),
-        hintText: 'Tìm kiếm',
-        hintStyle: TextStyles.textSmall.copyWith(fontWeight: FontWeight.w500),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-      ),
     );
   }
 
@@ -268,7 +246,6 @@ class _HomePageState extends State<HomePage> {
             ),
 
             // Bookmark
-            const SizedBox(width: 8),
             IconButton(
               icon: Icon(
                 isBookmarked ? Icons.bookmark : Icons.bookmark_outline_outlined,

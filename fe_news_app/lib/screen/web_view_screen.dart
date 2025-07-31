@@ -1,3 +1,4 @@
+import 'package:fe_news_app/theme/color_theme.dart';
 import 'package:fe_news_app/theme/text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -29,6 +30,9 @@ class _WebViewScreenState extends State<WebViewScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        backgroundColor: ColorTheme.bgPrimaryColor,
         title: Text(
           widget.title ?? 'Chi tiết tin tức',
           style: TextStyles.textMedium,

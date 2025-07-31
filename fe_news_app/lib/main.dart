@@ -1,4 +1,5 @@
 import 'package:fe_news_app/page/bookmarks_page.dart';
+import 'package:fe_news_app/page/profile_page.dart';
 import 'package:fe_news_app/screen/forgot_password.dart';
 import 'package:fe_news_app/page/home_page.dart';
 import 'package:fe_news_app/page/login_page.dart';
@@ -23,6 +24,7 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const Login(),
         '/home': (context) => const HomePage(),
         '/signUp': (context) => const SignUp(),
+        '/profile': (context) => const Profile(),
         '/forgotPassword': (context) => ForgotPassword(),
         '/bookmark': (context) => BookmarksPage(),
         '/verificationSuccess': (context) => VerificationSuccess(),

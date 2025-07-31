@@ -7,6 +7,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AuthService {
   static const String baseUrl = 'http://192.168.38.126:3000/auth';
 
+  static Future<Map<String, String>> getHeaders() async {
+    final token = await AuthService.getToken();
+    return {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+  }
+
   static Future<Map<String, dynamic>> register(
     String email,
     String password,
@@ -30,9 +38,10 @@ class AuthService {
     String email,
     String password,
   ) async {
+    final headers = await getHeaders();
     final response = await http.post(
       Uri.parse('$baseUrl/login'),
-      headers: {'Content-Type': 'application/json'},
+      headers: headers,
       body: jsonEncode({'email': email, 'password': password}),
     );
 
@@ -48,6 +57,43 @@ class AuthService {
       return data;
     } else {
       throw Exception(data['message'] ?? 'Đăng nhập thất bại');
+    }
+  }
+
+  static Future<Map<String, dynamic>?> getUserInfor() async {
+    final prefs = await SharedPreferences.getInstance();
+    final headers = await getHeaders();
+
+    final response = await http.get(Uri.parse('$baseUrl/'), headers: headers);
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['user'];
+    } else {
+      print('Failed to load user: ${response.body}');
+      await prefs.remove('token');
+      return null;
+    }
+  }
+
+  static Future<bool> updateUser({
+    required String email,
+    required String username,
+  }) async {
+    final url = Uri.parse('$baseUrl/update');
+    final headers = await getHeaders();
+
+    final response = await http.put(
+      url,
+      headers: headers,
+      body: jsonEncode({'email': email, 'username': username}),
+    );
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      print('Update failed: ${response.body}');
+      return false;
     }
   }
 

@@ -22,6 +22,7 @@ class BookmarksPageState extends State<BookmarksPage> {
 
   List<dynamic> bookmarks = [];
   List<dynamic> filteredBookmarks = [];
+  Set<String> bookmarkedLinks = {};
   bool isLoading = true;
 
   @override
@@ -43,14 +44,17 @@ class BookmarksPageState extends State<BookmarksPage> {
   Future<void> loadBookmarks() async {
     try {
       final data = await BookmarkService.getBookmarks();
-
+      final links = data.map<String>((e) => e['link'] as String).toSet();
+      if (!mounted) return;
       setState(() {
         bookmarks = data;
         filteredBookmarks = data;
+        bookmarkedLinks = links;
         isLoading = false;
       });
     } catch (e) {
       print('Error loading bookmarks: $e');
+      if (!mounted) return;
       setState(() {
         isLoading = false;
       });
@@ -133,11 +137,14 @@ class BookmarksPageState extends State<BookmarksPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: ColorTheme.bgPrimaryColor,
       appBar: AppBar(
+        backgroundColor: ColorTheme.bgPrimaryColor,
         title: Text(
           'Mục yêu thích',
-          style: TextStyles.textMedium.copyWith(fontWeight: FontWeight.w500),
+          style: TextStyles.textLarge.copyWith(fontWeight: FontWeight.w500),
         ),
+        centerTitle: true,
       ),
       body:
           isLoading
@@ -170,9 +177,10 @@ class BookmarksPageState extends State<BookmarksPage> {
                       itemCount: filteredBookmarks.length,
                       itemBuilder: (context, index) {
                         final item = filteredBookmarks[index];
+                        final url = item['link'];
+                        final isBookmarked = bookmarkedLinks.contains(url);
                         return GestureDetector(
                           onTap: () {
-                            final url = item['link'];
                             if (url != null) {
                               Navigator.push(
                                 context,
@@ -184,7 +192,7 @@ class BookmarksPageState extends State<BookmarksPage> {
                                             (item['channelTitle']
                                                     ?.split(' - ')
                                                     ?.first ??
-                                                'No title'),
+                                                ''),
                                       ),
                                 ),
                               );
@@ -235,30 +243,108 @@ class BookmarksPageState extends State<BookmarksPage> {
                                         ),
                                         const SizedBox(height: 4),
                                         Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
                                           children: [
-                                            Image.asset(
-                                              'assets/images/vnexpress.png',
-                                              width: 18,
-                                              height: 18,
-                                            ),
-                                            const SizedBox(width: 4),
-                                            Text(
-                                              item['source'] ?? 'VNExpress',
-                                              style: TextStyles.textXSmall
-                                                  .copyWith(
-                                                    color: ColorTheme.bodyText,
-                                                    fontWeight: FontWeight.w600,
+                                            Row(
+                                              children: [
+                                                Image.asset(
+                                                  'assets/images/vnexpress.png',
+                                                  width: 18,
+                                                  height: 18,
+                                                ),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  item['source'] ?? 'VNExpress',
+                                                  style: TextStyles.textXSmall
+                                                      .copyWith(
+                                                        color:
+                                                            ColorTheme.bodyText,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Icon(
+                                                  Icons.access_time,
+                                                  size: 14,
+                                                ),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  formatTimeAgo(
+                                                    item['pubDate'],
                                                   ),
+                                                  style: TextStyles.textXSmall
+                                                      .copyWith(
+                                                        color:
+                                                            ColorTheme.bodyText,
+                                                      ),
+                                                ),
+                                              ],
                                             ),
-                                            const SizedBox(width: 8),
-                                            Icon(Icons.access_time, size: 14),
-                                            const SizedBox(width: 4),
-                                            Text(
-                                              formatTimeAgo(item['pubDate']),
-                                              style: TextStyles.textXSmall
-                                                  .copyWith(
-                                                    color: ColorTheme.bodyText,
-                                                  ),
+                                            IconButton(
+                                              icon: Icon(
+                                                isBookmarked
+                                                    ? Icons.bookmark
+                                                    : Icons
+                                                        .bookmark_outline_outlined,
+                                                size: 24,
+                                                color:
+                                                    isBookmarked
+                                                        ? ColorTheme
+                                                            .primaryColor
+                                                        : ColorTheme
+                                                            .disableInput,
+                                              ),
+                                              onPressed: () async {
+                                                final url = item['link'];
+
+                                                if (isBookmarked) {
+                                                  final success =
+                                                      await BookmarkService.deleteBookmark(
+                                                        url,
+                                                      );
+                                                  if (success) {
+                                                    setState(() {
+                                                      bookmarkedLinks.remove(
+                                                        url,
+                                                      );
+                                                      bookmarks.removeWhere(
+                                                        (b) => b['link'] == url,
+                                                      );
+                                                      filteredBookmarks
+                                                          .removeWhere(
+                                                            (b) =>
+                                                                b['link'] ==
+                                                                url,
+                                                          );
+                                                    });
+                                                  }
+                                                } else {
+                                                  final success =
+                                                      await BookmarkService.createBookmark(
+                                                        {
+                                                          'title':
+                                                              item['title'],
+                                                          'link': url,
+                                                          'thumbnail':
+                                                              item['thumbnail'],
+                                                          'source':
+                                                              item['source'],
+                                                          'pubDate':
+                                                              item['pubDate'],
+                                                        },
+                                                      );
+
+                                                  if (success) {
+                                                    setState(
+                                                      () => bookmarkedLinks.add(
+                                                        url,
+                                                      ),
+                                                    );
+                                                  }
+                                                }
+                                              },
                                             ),
                                           ],
                                         ),

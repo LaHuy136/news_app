@@ -18,6 +18,42 @@ const login = async (req, res) => {
     }
 };
 
+const getUserById = async (req, res) => {
+    const userId = req.user.id;
+
+    try {
+        const user = await authService.getUserById(userId);
+        return res.json({ user });
+    } catch (err) {
+        if (err.message === 'User not found') {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        return res.status(500).json({ message: err.message });
+    }
+};
+
+
+const updateUser = async (req, res) => {
+    const userId = req.user.id;
+    const { email, username,} = req.body;
+
+    try {
+        const user = await authService.updateUserInfo(userId, {
+            email,
+            username,
+        });
+
+        return res.json({ message: 'User updated successfully', user });
+    } catch (err) {
+        if (err.message === 'User not found') {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        return res.status(500).json({ message: err.message });
+    }
+};
+
+
 
 const requestOTP = async (req, res) => {
     try {
@@ -57,4 +93,6 @@ module.exports = {
     requestOTP,
     resetPassword,
     verifyCode,
+    updateUser,
+    getUserById,
 };

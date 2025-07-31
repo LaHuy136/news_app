@@ -145,7 +145,6 @@ class _NewsCategoryScreenState extends State<NewsCategoryScreen>
                         ),
 
                         // Bookmark
-                        const SizedBox(width: 8),
                         IconButton(
                           icon: Icon(
                             isBookmarked

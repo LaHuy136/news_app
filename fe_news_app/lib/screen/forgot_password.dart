@@ -1,6 +1,6 @@
 import 'package:fe_news_app/components/elevated_button.dart';
 import 'package:fe_news_app/components/radio_option.dart';
-import 'package:fe_news_app/page/forgot_password_enter.dart';
+import 'package:fe_news_app/screen/forgot_password_enter.dart';
 import 'package:fe_news_app/theme/color_theme.dart';
 import 'package:fe_news_app/theme/text_styles.dart';
 import 'package:flutter/material.dart';

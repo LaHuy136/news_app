@@ -7,6 +7,7 @@ router.use(authMiddleware);
 
 router.post('/', bookmarkController.createBookmark);
 router.get('/', bookmarkController.getBookmarks);
-router.delete('/:id', bookmarkController.deleteBookmark);
+router.delete('/', bookmarkController.deleteBookmarkByLink);
+
 
 module.exports = router;

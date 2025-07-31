@@ -121,7 +121,8 @@ class _LoginState extends State<Login> {
                 children: [
                   SizedBox.shrink(),
                   InkWell(
-                    onTap: () => Navigator.pushNamed(context, '/forgotPassword'),
+                    onTap:
+                        () => Navigator.pushNamed(context, '/forgotPassword'),
                     child: Text(
                       'Quên mật khẩu?',
                       style: TextStyles.textXSmall.copyWith(
@@ -151,9 +152,19 @@ class _LoginState extends State<Login> {
                     );
                     Navigator.pushReplacementNamed(context, '/home');
                   } catch (e) {
+                    String errorMessage = e.toString().replaceFirst(
+                      'Exception: ',
+                      '',
+                    );
+                    if (errorMessage == 'User not found') {
+                      errorMessage = 'Người dùng không tồn tại';
+                    }
+                    if (errorMessage == 'Invalid credentials') {
+                      errorMessage = 'Email hoặc mật khẩu không đúng';
+                    }
                     showCustomSnackBar(
                       context: context,
-                      message: e.toString().replaceFirst('Exception: ', ''),
+                      message: errorMessage,
                       type: SnackBarType.error,
                     );
                   } finally {
@@ -172,8 +183,10 @@ class _LoginState extends State<Login> {
                   Text('—', style: TextStyle(color: ColorTheme.primaryColor)),
                   const SizedBox(width: 6),
                   Text(
-                    'hoặc Đăng nhập với',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+                    'hoặc đăng nhập với',
+                    style: TextStyles.textMedium.copyWith(
+                      fontWeight: FontWeight.w400,
+                    ),
                   ),
                   const SizedBox(width: 6),
                   Text('—', style: TextStyle(color: ColorTheme.primaryColor)),
@@ -193,10 +206,24 @@ class _LoginState extends State<Login> {
                         border: Border.all(color: ColorTheme.dividerColor),
                       ),
                       padding: EdgeInsets.all(16),
-                      child: SvgPicture.asset(
-                        'assets/icons/google.svg',
-                        width: 23,
-                        height: 23,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          // Svg
+                          SvgPicture.asset(
+                            'assets/icons/google.svg',
+                            width: 23,
+                            height: 23,
+                          ),
+                          // Text
+                          Text(
+                            'Google',
+                            style: TextStyles.textMedium.copyWith(
+                              color: ColorTheme.bodyText,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -210,10 +237,22 @@ class _LoginState extends State<Login> {
                         border: Border.all(color: ColorTheme.dividerColor),
                       ),
                       padding: EdgeInsets.all(16),
-                      child: SvgPicture.asset(
-                        'assets/icons/facebook.svg',
-                        width: 23,
-                        height: 23,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          SvgPicture.asset(
+                            'assets/icons/facebook.svg',
+                            width: 23,
+                            height: 23,
+                          ),
+                          Text(
+                            'Facebook',
+                            style: TextStyles.textMedium.copyWith(
+                              color: ColorTheme.bodyText,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),

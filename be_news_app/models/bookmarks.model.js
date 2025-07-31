@@ -1,14 +1,23 @@
 module.exports = (sequelize, DataTypes) => {
     const Bookmark = sequelize.define('Bookmark', {
-        newsId: {
+        title: {
             type: DataTypes.STRING,
             allowNull: false,
         },
-        title: DataTypes.STRING,
-        link: DataTypes.STRING,
-        thumbnail: DataTypes.STRING,
-        source: DataTypes.STRING,
-        pubDate: DataTypes.STRING,
+        link: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            unique: true, 
+        },
+        thumbnail: {
+            type: DataTypes.STRING,
+        },
+        source: {
+            type: DataTypes.STRING,
+        },
+        pubDate: {
+            type: DataTypes.STRING,
+        },
     });
 
     Bookmark.associate = (models) => {

@@ -4,7 +4,7 @@ import 'dart:async';
 
 import 'package:fe_news_app/components/custom_snackbar.dart';
 import 'package:fe_news_app/components/elevated_button.dart';
-import 'package:fe_news_app/page/reset_password.dart';
+import 'package:fe_news_app/page/reset_password_page.dart';
 import 'package:fe_news_app/services/auth_service.dart';
 import 'package:fe_news_app/theme/color_theme.dart';
 import 'package:fe_news_app/theme/text_styles.dart';

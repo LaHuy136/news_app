@@ -1,10 +1,12 @@
 // ignore_for_file: avoid_print
 
+import 'package:fe_news_app/components/bottom_navbar.dart';
 import 'package:fe_news_app/helpers/app_helper.dart';
 import 'package:fe_news_app/screen/latest_news_screen.dart';
 import 'package:fe_news_app/screen/news_category_screen.dart';
 import 'package:fe_news_app/screen/trending_news_screen.dart';
 import 'package:fe_news_app/screen/web_view_screen.dart';
+import 'package:fe_news_app/services/bookmarks_service.dart';
 import 'package:fe_news_app/services/news_service.dart';
 import 'package:fe_news_app/theme/color_theme.dart';
 import 'package:fe_news_app/theme/text_styles.dart';
@@ -21,10 +23,12 @@ class _HomePageState extends State<HomePage> {
   TextEditingController searchController = TextEditingController();
   List<dynamic> trendingNews = [];
   bool isLoading = true;
+  Set<String> bookmarkedLinks = {};
 
   @override
   void initState() {
     super.initState();
+    fetchBookmarks();
     fetchNews();
   }
 
@@ -43,9 +47,24 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> fetchBookmarks() async {
+    try {
+      final bookmarks = await BookmarkService.getBookmarks();
+      final links = bookmarks.map<String>((e) => e['link'] as String).toSet();
+
+      setState(() {
+        bookmarkedLinks = links;
+      });
+    } catch (e) {
+      print('Lỗi khi lấy danh sách bookmark: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final trendingItem = trendingNews.isNotEmpty ? trendingNews[0] : null;
+    final itemLink = trendingItem?['link']?.trim() ?? '';
+    final isBookmarked = bookmarkedLinks.any((link) => link.trim() == itemLink);
 
     return Scaffold(
       backgroundColor: ColorTheme.bgPrimaryColor,
@@ -91,7 +110,7 @@ class _HomePageState extends State<HomePage> {
                           const SizedBox(height: 16),
 
                           // Trending section + image + info
-                          buildTrendingSection(trendingItem),
+                          buildTrendingSection(trendingItem, isBookmarked),
                           const SizedBox(height: 24),
 
                           // Latest section
@@ -108,7 +127,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ],
               ),
-      // bottomNavigationBar: MyBottomNavbar(),
+      bottomNavigationBar: MyBottomNavbar(),
     );
   }
 
@@ -129,7 +148,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget buildTrendingSection(dynamic trendingItem) {
+  Widget buildTrendingSection(dynamic trendingItem, bool isBookmarked) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -250,10 +269,42 @@ class _HomePageState extends State<HomePage> {
 
             // Bookmark
             const SizedBox(width: 8),
-            const Icon(Icons.bookmark_outline_outlined, size: 24),
+            IconButton(
+              icon: Icon(
+                isBookmarked ? Icons.bookmark : Icons.bookmark_outline_outlined,
+                size: 24,
+                color:
+                    isBookmarked
+                        ? ColorTheme.primaryColor
+                        : ColorTheme.disableInput,
+              ),
+              onPressed: () async {
+                final articleLink = trendingItem['link'];
+
+                if (isBookmarked) {
+                  final success = await BookmarkService.deleteBookmark(
+                    articleLink,
+                  );
+                  if (success) {
+                    setState(() => bookmarkedLinks.remove(articleLink));
+                  }
+                } else {
+                  final success = await BookmarkService.createBookmark({
+                    'title': trendingItem['title'],
+                    'link': articleLink,
+                    'thumbnail': trendingItem['thumbnail'],
+                    'source': trendingItem['source'],
+                    'pubDate': trendingItem['pubDate'],
+                  });
+
+                  if (success) {
+                    setState(() => bookmarkedLinks.add(articleLink));
+                  }
+                }
+              },
+            ),
           ],
         ),
-        const SizedBox(height: 24),
       ],
     );
   }

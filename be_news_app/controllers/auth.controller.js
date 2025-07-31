@@ -39,9 +39,22 @@ const resetPassword = async (req, res) => {
     }
 };
 
+const verifyCode = async (req, res) => {
+    const { email, otp } = req.body;
+
+    try {
+        const result = await authService.verifyCode(email, otp);
+        res.json(result);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+};
+
+
 module.exports = {
     register,
     login,
     requestOTP,
     resetPassword,
+    verifyCode,
 };

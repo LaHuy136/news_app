@@ -21,7 +21,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ForgotPasswordEnter(contactOption: 'email'),
+          builder: (context) => ForgotPasswordEnter(contactOption: 'Địa chỉ email'),
         ),
       );
     } else {
@@ -29,7 +29,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ForgotPasswordEnter(contactOption: 'phone'),
+          builder: (context) => ForgotPasswordEnter(contactOption: 'Số di động'),
         ),
       );
     }

@@ -8,7 +8,9 @@ import 'package:fe_news_app/theme/color_theme.dart';
 import 'package:flutter/material.dart';
 
 class ResetPassword extends StatefulWidget {
-  const ResetPassword({super.key});
+  final String code;
+  final String email;
+  const ResetPassword({super.key, required this.code, required this.email});
 
   @override
   State<ResetPassword> createState() => _ResetPasswordState();
@@ -59,26 +61,6 @@ class _ResetPasswordState extends State<ResetPassword> {
               ),
 
               const SizedBox(height: 50),
-              // Email
-              MyTextFormField(
-                controller: emailController,
-                hintText: '  Địa chỉ email',
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Vui lòng nhập email';
-                  }
-                  final emailRegex = RegExp(
-                    r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                  );
-                  if (!emailRegex.hasMatch(value)) {
-                    return 'Email không hợp lệ';
-                  }
-                  return null;
-                },
-                icon: Icons.email_rounded,
-              ),
-
-              const SizedBox(height: 20),
               // Password
               MyTextFormField(
                 controller: newPasswordController,
@@ -118,7 +100,6 @@ class _ResetPasswordState extends State<ResetPassword> {
               // Button Reset Password
               MyElevatedButton(
                 onPressed: () async {
-                  final email = emailController.text.trim();
                   final newPassword = newPasswordController.text;
                   final confirmPassword = confirmPwController.text;
 
@@ -135,8 +116,8 @@ class _ResetPasswordState extends State<ResetPassword> {
 
                   try {
                     final success = await AuthService.resetPassword(
-                      email,
-                      '111',
+                      widget.email,
+                      widget.code,
                       newPassword,
                     );
 

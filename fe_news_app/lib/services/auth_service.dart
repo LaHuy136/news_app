@@ -18,12 +18,12 @@ class AuthService {
   static Future<Map<String, dynamic>> register(
     String email,
     String password,
-    String name,
+    String username,
   ) async {
     final response = await http.post(
       Uri.parse('$baseUrl/register'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'email': email, 'password': password, 'name': name}),
+      body: jsonEncode({'email': email, 'password': password, 'username': username}),
     );
 
     final data = jsonDecode(response.body);

@@ -18,6 +18,24 @@ const login = async (req, res) => {
     }
 };
 
+
+const googleFirebaseLogin = async (req, res) => {
+    const { idToken } = req.body;
+    if (!idToken) {
+        return res.status(400).json({ error: 'Missing Firebase ID token' });
+    }
+    try {
+        const result = await authService.loginWithFirebaseToken(idToken);
+        res.status(200).json({
+            message: 'Google login successful',
+            token: result.token,
+            user: result.user,
+        });
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+};
+
 const getUserById = async (req, res) => {
     const userId = req.user.id;
 
@@ -35,7 +53,7 @@ const getUserById = async (req, res) => {
 
 const updateUser = async (req, res) => {
     const userId = req.user.id;
-    const { email, username,} = req.body;
+    const { email, username, } = req.body;
 
     try {
         const user = await authService.updateUserInfo(userId, {
@@ -90,6 +108,7 @@ const verifyCode = async (req, res) => {
 module.exports = {
     register,
     login,
+    googleFirebaseLogin,
     requestOTP,
     resetPassword,
     verifyCode,

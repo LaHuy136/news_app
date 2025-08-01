@@ -1,3 +1,6 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
+
 import 'package:fe_news_app/page/bookmarks_page.dart';
 import 'package:fe_news_app/page/profile_page.dart';
 import 'package:fe_news_app/screen/forgot_password.dart';
@@ -5,11 +8,13 @@ import 'package:fe_news_app/page/home_page.dart';
 import 'package:fe_news_app/page/login_page.dart';
 import 'package:fe_news_app/page/sign_up_page.dart';
 import 'package:fe_news_app/screen/verification_success.dart';
-import 'package:flutter/material.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(); 
   runApp(const MyApp());
 }
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

@@ -3,7 +3,9 @@
 import 'package:fe_news_app/components/custom_snackbar.dart';
 import 'package:fe_news_app/components/elevated_button.dart';
 import 'package:fe_news_app/components/text_formfield.dart';
+import 'package:fe_news_app/screen/loading_screen.dart';
 import 'package:fe_news_app/services/auth_service.dart';
+import 'package:fe_news_app/services/google_service.dart';
 import 'package:fe_news_app/theme/color_theme.dart';
 import 'package:fe_news_app/theme/text_styles.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +25,38 @@ class _SignUpState extends State<SignUp> {
   final emailController = TextEditingController();
   final pwController = TextEditingController();
   final confirmPwController = TextEditingController();
+
+  void onGoogleSignInPressed() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => LoadingScreen(
+              onLoad: () async {
+                final user = await GoogleService.signInWithGoogle();
+
+                if (!mounted) return;
+
+                if (user != null) {
+                  showCustomSnackBar(
+                    context: context,
+                    message: 'Đăng nhập thành công bằng Google',
+                    type: SnackBarType.success,
+                  );
+                  Navigator.pushReplacementNamed(context, '/home');
+                } else {
+                  showCustomSnackBar(
+                    context: context,
+                    message: 'Đăng nhập thất bại bằng Google',
+                  );
+                  Navigator.pop(context);
+                }
+              },
+            ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -203,30 +237,32 @@ class _SignUpState extends State<SignUp> {
                 children: [
                   // Google
                   Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: ColorTheme.dividerColor),
-                      ),
-                      padding: EdgeInsets.all(16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          // Svg
-                          SvgPicture.asset(
-                            'assets/icons/google.svg',
-                            width: 23,
-                            height: 23,
-                          ),
-                          // Text
-                          Text(
-                            'Google',
-                            style: TextStyles.textMedium.copyWith(
-                              color: ColorTheme.bodyText,
-                              fontWeight: FontWeight.w500,
+                    child: InkWell(
+                      onTap: onGoogleSignInPressed,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: ColorTheme.dividerColor),
+                        ),
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SvgPicture.asset(
+                              'assets/icons/google.svg',
+                              width: 23,
+                              height: 23,
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 8),
+                            Text(
+                              'Google',
+                              style: TextStyles.textMedium.copyWith(
+                                color: ColorTheme.bodyText,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),

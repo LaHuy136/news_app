@@ -7,9 +7,15 @@ module.exports = (sequelize, DataTypes) => {
     },
     password: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     username: DataTypes.STRING,
+    firebaseUid: {
+      type: DataTypes.STRING,
+      unique: true,
+      allowNull: true,
+    },
+
   });
 
   User.associate = (models) => {

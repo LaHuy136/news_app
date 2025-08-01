@@ -1,13 +1,20 @@
 // ignore_for_file: use_build_context_synchronously, unused_local_variable
 
+import 'dart:convert';
+
 import 'package:fe_news_app/components/custom_snackbar.dart';
 import 'package:fe_news_app/components/elevated_button.dart';
 import 'package:fe_news_app/components/text_formfield.dart';
+import 'package:fe_news_app/screen/loading_screen.dart';
 import 'package:fe_news_app/services/auth_service.dart';
+import 'package:fe_news_app/services/google_service.dart';
 import 'package:fe_news_app/theme/color_theme.dart';
 import 'package:fe_news_app/theme/text_styles.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Login extends StatefulWidget {
@@ -27,31 +34,94 @@ class _LoginState extends State<Login> {
   @override
   void initState() {
     super.initState();
-    loadRememberMe();
+    tryAutoLogin();
   }
 
-  Future<void> loadRememberMe() async {
+  Future<void> tryAutoLogin() async {
     final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      rememberMe = prefs.getBool('rememberMe') ?? false;
-      if (rememberMe) {
-        emailController.text = prefs.getString('savedEmail') ?? '';
-        pwController.text = prefs.getString('savedPassword') ?? '';
-      }
-    });
-  }
+    final remember = prefs.getBool('rememberMe') ?? false;
+    if (!remember) return;
 
-  // Lưu trạng thái remember me
-  Future<void> saveRememberMe() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('rememberMe', rememberMe);
-    if (rememberMe) {
-      await prefs.setString('savedEmail', emailController.text);
-      await prefs.setString('savedPassword', pwController.text);
-    } else {
-      await prefs.remove('savedEmail');
-      await prefs.remove('savedPassword');
+    final jwt = prefs.getString('jwtToken');
+    if (jwt != null) {
+      Navigator.pushReplacementNamed(context, '/home');
+      return;
     }
+
+    // Fallback: thử silent Google sign-in để lấy token mới
+    final GoogleSignIn googleSignIn = GoogleSignIn(
+      scopes: ['email', 'profile'],
+    );
+    final account = await googleSignIn.signInSilently();
+    if (account != null) {
+      // Lấy Firebase credential như trước để gọi backend lại
+      final googleAuth = await account.authentication;
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+      final userCredential = await FirebaseAuth.instance.signInWithCredential(
+        credential,
+      );
+      final firebaseIdToken = await userCredential.user?.getIdToken();
+
+      if (firebaseIdToken != null) {
+        // Gọi backend để đổi lấy JWT nội bộ
+        final response = await http.post(
+          Uri.parse('http://192.168.38.126:3000/auth/google-login'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({'idToken': firebaseIdToken}),
+        );
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          final token = data['token'];
+          if (token != null) {
+            await prefs.setString('jwtToken', token);
+            Navigator.pushReplacementNamed(context, '/home');
+          }
+        }
+      }
+    }
+  }
+
+  void onGoogleSignInPressed() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => LoadingScreen(
+              onLoad: () async {
+                final user = await GoogleService.signInWithGoogle();
+
+                if (!mounted) return;
+
+                if (user != null) {
+                  final prefs = await SharedPreferences.getInstance();
+                  if (rememberMe) {
+                    await prefs.setBool('rememberMe', true);
+                    await prefs.setString(
+                      'jwtToken',
+                      prefs.getString('token') ?? '',
+                    );
+                  }
+
+                  showCustomSnackBar(
+                    context: context,
+                    message: 'Đăng nhập thành công bằng Google',
+                    type: SnackBarType.success,
+                  );
+                  Navigator.pushReplacementNamed(context, '/home');
+                } else {
+                  showCustomSnackBar(
+                    context: context,
+                    message: 'Đăng nhập thất bại bằng Google',
+                  );
+                  Navigator.pop(context);
+                }
+              },
+            ),
+      ),
+    );
   }
 
   @override
@@ -200,8 +270,6 @@ class _LoginState extends State<Login> {
                       pwController.text.trim(),
                     );
 
-                    await saveRememberMe();
-
                     showCustomSnackBar(
                       context: context,
                       message: 'Đăng nhập thành công',
@@ -256,30 +324,32 @@ class _LoginState extends State<Login> {
                 children: [
                   // Google
                   Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: ColorTheme.dividerColor),
-                      ),
-                      padding: EdgeInsets.all(16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          // Svg
-                          SvgPicture.asset(
-                            'assets/icons/google.svg',
-                            width: 23,
-                            height: 23,
-                          ),
-                          // Text
-                          Text(
-                            'Google',
-                            style: TextStyles.textMedium.copyWith(
-                              color: ColorTheme.bodyText,
-                              fontWeight: FontWeight.w500,
+                    child: InkWell(
+                      onTap: onGoogleSignInPressed,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: ColorTheme.dividerColor),
+                        ),
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SvgPicture.asset(
+                              'assets/icons/google.svg',
+                              width: 23,
+                              height: 23,
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 8),
+                            Text(
+                              'Google',
+                              style: TextStyles.textMedium.copyWith(
+                                color: ColorTheme.bodyText,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),

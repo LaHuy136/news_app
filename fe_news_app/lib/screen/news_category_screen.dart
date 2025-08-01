@@ -19,15 +19,19 @@ class NewsCategoryScreen extends StatefulWidget {
 class _NewsCategoryScreenState extends State<NewsCategoryScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  Set<String> bookmarkedLinks = {}; 
+  Set<String> bookmarkedLinks = {};
 
   final Map<String, String> categories = {
     'the-gioi-vnexpress': 'Thế giới',
-    'cong-nghe-vnexpress': 'Công nghệ',
-    'the-thao-vnexpress': 'Thể thao',
-    'doi-song-vnexpress': 'Đời sống',
+    'thoi-su-vnexpress': 'Thời sự',
     'giai-tri-vnexpress': 'Giải trí',
+    'the-thao-vnexpress': 'Thể thao',
+    'giao-duc-vnexpress': 'Giáo dục',
+    'suc-khoe-vnexpress': 'Sức khỏe',
+    'doi-song-vnexpress': 'Đời sống',
+    'cong-nghe-vnexpress': 'Công nghệ',
     'xe-vnexpress': 'Xe',
+    'cuoi-vnexpress': 'Cười',
   };
 
   @override

@@ -108,7 +108,7 @@ class _ProfileState extends State<Profile> {
                                   avatar != null
                                       ? FileImage(avatar!) as ImageProvider
                                       : const AssetImage(
-                                        'assets/images/logo.png',
+                                        'assets/images/avatar.png',
                                       ),
                             ),
                           ),
@@ -192,30 +192,32 @@ class _ProfileState extends State<Profile> {
       children: [
         Text(
           text,
-          style: TextStyle(
-            fontFamily: 'Roboto',
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: ColorTheme.primaryColor,
-          ),
+          style: TextStyles.textSmall.copyWith(fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 6),
         TextField(
           controller: controller,
           decoration: InputDecoration(
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: ColorTheme.disableInput),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: ColorTheme.disableInput),
+              borderRadius: BorderRadius.circular(8),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            disabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: ColorTheme.disableInput),
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+            ),
+            errorBorder: OutlineInputBorder(
+              // borderSide: BorderSide(color: ColorTheme.errorInput),
+              borderRadius: BorderRadius.all(Radius.circular(8)),
             ),
           ),
-          style: TextStyle(fontFamily: 'Roboto', fontSize: 14),
+          style: TextStyles.textSmall,
         ),
       ],
     );

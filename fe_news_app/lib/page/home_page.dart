@@ -110,7 +110,6 @@ class _HomePageState extends State<HomePage> {
 
                           // Latest section
                           buildLatestSection(context),
-                          const SizedBox(height: 16),
                         ],
                       ),
                     ),

@@ -209,10 +209,24 @@ class _SignUpState extends State<SignUp> {
                         border: Border.all(color: ColorTheme.dividerColor),
                       ),
                       padding: EdgeInsets.all(16),
-                      child: SvgPicture.asset(
-                        'assets/icons/google.svg',
-                        width: 23,
-                        height: 23,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          // Svg
+                          SvgPicture.asset(
+                            'assets/icons/google.svg',
+                            width: 23,
+                            height: 23,
+                          ),
+                          // Text
+                          Text(
+                            'Google',
+                            style: TextStyles.textMedium.copyWith(
+                              color: ColorTheme.bodyText,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -226,10 +240,22 @@ class _SignUpState extends State<SignUp> {
                         border: Border.all(color: ColorTheme.dividerColor),
                       ),
                       padding: EdgeInsets.all(16),
-                      child: SvgPicture.asset(
-                        'assets/icons/facebook.svg',
-                        width: 23,
-                        height: 23,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          SvgPicture.asset(
+                            'assets/icons/facebook.svg',
+                            width: 23,
+                            height: 23,
+                          ),
+                          Text(
+                            'Facebook',
+                            style: TextStyles.textMedium.copyWith(
+                              color: ColorTheme.bodyText,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),

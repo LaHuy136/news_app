@@ -8,6 +8,7 @@ import 'package:fe_news_app/theme/color_theme.dart';
 import 'package:fe_news_app/theme/text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -19,8 +20,40 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   final formKey = GlobalKey<FormState>();
   bool isLoading = false;
+  bool rememberMe = false;
   final emailController = TextEditingController();
   final pwController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    loadRememberMe();
+  }
+
+  Future<void> loadRememberMe() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      rememberMe = prefs.getBool('rememberMe') ?? false;
+      if (rememberMe) {
+        emailController.text = prefs.getString('savedEmail') ?? '';
+        pwController.text = prefs.getString('savedPassword') ?? '';
+      }
+    });
+  }
+
+  // Lưu trạng thái remember me
+  Future<void> saveRememberMe() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('rememberMe', rememberMe);
+    if (rememberMe) {
+      await prefs.setString('savedEmail', emailController.text);
+      await prefs.setString('savedPassword', pwController.text);
+    } else {
+      await prefs.remove('savedEmail');
+      await prefs.remove('savedPassword');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -119,7 +152,27 @@ class _LoginState extends State<Login> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  SizedBox.shrink(),
+                  Row(
+                    children: [
+                      Checkbox(
+                        activeColor: ColorTheme.primaryColor,
+                        visualDensity: VisualDensity.compact,
+                        value: rememberMe,
+                        onChanged: (value) {
+                          setState(() {
+                            rememberMe = value ?? false;
+                          });
+                        },
+                      ),
+                      Text(
+                        'Ghi nhớ đăng nhập',
+                        style: TextStyles.textXSmall.copyWith(
+                          color: ColorTheme.bodyText,
+                        ),
+                      ),
+                    ],
+                  ),
+                  // Forgot Password
                   InkWell(
                     onTap:
                         () => Navigator.pushNamed(context, '/forgotPassword'),
@@ -146,6 +199,9 @@ class _LoginState extends State<Login> {
                       emailController.text.trim(),
                       pwController.text.trim(),
                     );
+
+                    await saveRememberMe();
+
                     showCustomSnackBar(
                       context: context,
                       message: 'Đăng nhập thành công',

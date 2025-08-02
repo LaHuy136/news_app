@@ -1,5 +1,6 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, use_build_context_synchronously
 
+import 'package:fe_news_app/components/custom_snackbar.dart';
 import 'package:fe_news_app/helpers/app_helper.dart';
 import 'package:fe_news_app/screen/web_view_screen.dart';
 import 'package:fe_news_app/services/bookmarks_service.dart';
@@ -184,6 +185,12 @@ class _TrendingNewsScreenState extends State<TrendingNewsScreen> {
                           );
                           if (success) {
                             setState(() => bookmarkedLinks.remove(articleLink));
+                            showCustomSnackBar(
+                              context: context,
+                              message:
+                                  'Đã xóa bài viết khỏi mục yêu thích',
+                              type: SnackBarType.success,
+                            );
                           }
                         } else {
                           final success = await BookmarkService.createBookmark({
@@ -196,6 +203,12 @@ class _TrendingNewsScreenState extends State<TrendingNewsScreen> {
 
                           if (success) {
                             setState(() => bookmarkedLinks.add(articleLink));
+                            showCustomSnackBar(
+                              context: context,
+                              message:
+                                  'Đã thêm bài viết vào mục yêu thích',
+                              type: SnackBarType.success,
+                            );
                           }
                         }
                       },

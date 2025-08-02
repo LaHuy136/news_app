@@ -1,6 +1,7 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, use_build_context_synchronously
 
 import 'package:fe_news_app/components/bottom_navbar.dart';
+import 'package:fe_news_app/components/custom_snackbar.dart';
 import 'package:fe_news_app/helpers/app_helper.dart';
 import 'package:fe_news_app/screen/web_view_screen.dart';
 import 'package:fe_news_app/services/bookmarks_service.dart';
@@ -140,6 +141,7 @@ class BookmarksPageState extends State<BookmarksPage> {
       backgroundColor: ColorTheme.bgPrimaryColor,
       appBar: AppBar(
         backgroundColor: ColorTheme.bgPrimaryColor,
+        automaticallyImplyLeading: false,
         title: Text(
           'Mục yêu thích',
           style: TextStyles.textLarge.copyWith(fontWeight: FontWeight.w500),
@@ -319,6 +321,13 @@ class BookmarksPageState extends State<BookmarksPage> {
                                                                 url,
                                                           );
                                                     });
+                                                    showCustomSnackBar(
+                                                      context: context,
+                                                      message:
+                                                          'Đã xóa bài viết khỏi mục yêu thích',
+                                                      type:
+                                                          SnackBarType.success,
+                                                    );
                                                   }
                                                 } else {
                                                   final success =

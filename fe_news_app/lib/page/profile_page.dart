@@ -1,16 +1,16 @@
-// ignore_for_file: deprecated_member_use, use_build_context_synchronously
+// ignore_for_file: deprecated_member_use, use_build_context_synchronously, avoid_print
 
 import 'dart:io';
 
 import 'package:fe_news_app/components/bottom_navbar.dart';
-import 'package:fe_news_app/components/custom_snackbar.dart';
-import 'package:fe_news_app/components/elevated_button.dart';
+import 'package:fe_news_app/components/dialog_content.dart';
+import 'package:fe_news_app/page/settings_page.dart';
+import 'package:fe_news_app/screen/my_profile.dart';
 import 'package:fe_news_app/services/auth_service.dart';
 import 'package:fe_news_app/theme/color_theme.dart';
 import 'package:fe_news_app/theme/text_styles.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Profile extends StatefulWidget {
@@ -21,10 +21,12 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
+  int userId = 0;
+  String userName = '';
+  String email = '';
   File? avatar;
-
+  bool rememberMe = true;
+  bool isLoading = true;
   @override
   void initState() {
     super.initState();
@@ -39,34 +41,12 @@ class _ProfileState extends State<Profile> {
     if (savedPath != null && File(savedPath).existsSync()) {
       avatar = File(savedPath);
     }
-
     if (user != null) {
       setState(() {
-        nameController.text = user['username'] ?? '';
-        emailController.text = user['email'] ?? '';
+        userId = user['id'] ?? 0;
+        email = user['email'] ?? '';
+        userName = user['username'] ?? '';
       });
-    }
-  }
-
-  Future<void> pickAndSaveImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      final appDir = await getApplicationDocumentsDirectory();
-
-      final fileName = 'avatar_${DateTime.now().millisecondsSinceEpoch}.png';
-      final savedImage = await File(
-        pickedFile.path,
-      ).copy('${appDir.path}/$fileName');
-
-      imageCache.clear();
-      imageCache.clearLiveImages();
-
-      setState(() {
-        avatar = savedImage;
-      });
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('avatar_path', savedImage.path);
     }
   }
 
@@ -75,151 +55,196 @@ class _ProfileState extends State<Profile> {
     return Scaffold(
       backgroundColor: ColorTheme.bgPrimaryColor,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: ColorTheme.bgPrimaryColor,
-        title: Text(
-          'Trang cá nhân',
-          style: TextStyles.textLarge.copyWith(fontWeight: FontWeight.w500),
+        title: Container(
+          margin: EdgeInsets.only(top: 8),
+          child: Text(
+            'Cài đặt thông tin',
+            style: TextStyles.textLarge.copyWith(fontWeight: FontWeight.w500),
+          ),
         ),
         centerTitle: true,
       ),
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
+          Positioned.fill(
+            top: 120,
+            child: ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(56),
+                topRight: Radius.circular(56),
+              ),
+              child: Container(
+                height: double.infinity,
+                decoration: BoxDecoration(color: ColorTheme.bgPrimaryColor),
+                padding: EdgeInsets.all(32),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 30),
+                    SizedBox(height: 100),
+                    // Profile
+                    itemProfile(
+                      'assets/icons/profile.svg',
+                      'Thông tin cá nhân',
+                      () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => MyProfile()),
+                        );
 
-                    // Avatar
-                    Center(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          CircleAvatar(
-                            radius: 60,
-                            backgroundColor: Colors.white,
-                            child: CircleAvatar(
-                              radius: 60,
-                              key: ValueKey(avatar?.path),
-                              backgroundImage:
-                                  avatar != null
-                                      ? FileImage(avatar!) as ImageProvider
-                                      : const AssetImage(
-                                        'assets/images/avatar.png',
-                                      ),
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: pickAndSaveImage,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(16),
-                                color: ColorTheme.primaryColor,
-                              ),
-                              margin: const EdgeInsets.only(top: 60),
-                              child: Padding(
-                                padding: const EdgeInsets.all(4),
-                                child: Icon(
-                                  Icons.photo_camera_outlined,
-                                  size: 24,
-                                  color: ColorTheme.bgPrimaryColor,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
+                        if (result == true) {
+                          loadUserData();
+                        }
+                      },
+                    ),
+
+                    SizedBox(height: 30),
+                    // Settings
+                    itemProfile(
+                      'assets/icons/settings.svg',
+                      'Cài đặt',
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) =>
+                                  Settings(email: email, userId: userId),
+                        ),
                       ),
                     ),
 
-                    const SizedBox(height: 24),
-
-                    // Name
-                    buildContent('Tên', nameController),
-
-                    const SizedBox(height: 24),
-
-                    // Email
-                    buildContent('Địa chỉ email', emailController),
-
-                    const SizedBox(height: 16),
+                    SizedBox(height: 30),
+                    // Logout
+                    itemProfile(
+                      'assets/icons/log-out.svg',
+                      'Đăng xuất',
+                      () async {
+                        await showDialog(
+                          context: context,
+                          builder:
+                              (_) => CustomDialogContent(
+                                title: 'Đăng xuất khỏi ứng dụng?',
+                                buttonText: 'Đăng xuất',
+                                onPressed: () async {
+                                  final prefs =
+                                      await SharedPreferences.getInstance();
+                                  if (!rememberMe) {
+                                    await prefs.remove('token');
+                                  }
+                                  Navigator.pushReplacementNamed(
+                                    context,
+                                    '/login',
+                                  );
+                                },
+                                onRememberMeChanged: (val) => rememberMe = val,
+                              ),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),
             ),
           ),
 
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: MyElevatedButton(
-              onPressed: () async {
-                final success = await AuthService.updateUser(
-                  email: emailController.text,
-                  username: nameController.text,
-                );
+          // Profile góc trái
+          Positioned(
+            top: 50,
+            left: 20,
+            child: Text(
+              'Profile',
+              style: TextStyle(
+                fontFamily: 'Roboto',
+                color: ColorTheme.bgPrimaryColor,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
 
-                if (success) {
-                  showCustomSnackBar(
-                    context: context,
-                    message: 'Cập nhập thông tin cá nhân thành công',
-                  );
-                  Navigator.pushNamedAndRemoveUntil(
-                    context,
-                    '/home',
-                    ModalRoute.withName('/'),
-                  );
-                } else {
-                  showCustomSnackBar(
-                    context: context,
-                    message: 'Cập nhập thông tin thất bại',
-                  );
-                }
-              },
-              textButton: 'Lưu',
+          // Widget nổi
+          Positioned(
+            top: 90,
+            left: 20,
+            right: 20,
+            child: Container(
+              padding: EdgeInsets.only(
+                top: 60,
+                bottom: 16,
+                left: 16,
+                right: 16,
+              ),
+              decoration: BoxDecoration(
+                color: ColorTheme.bgPrimaryColor,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(blurRadius: 4, color: ColorTheme.disableInput),
+                ],
+              ),
+              child: Center(
+                child: Text(
+                  userName,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // Avatar nổi
+          Positioned(
+            top: 40,
+            left: MediaQuery.of(context).size.width / 2 - 50, // căn giữa
+            child: CircleAvatar(
+              radius: 45,
+              backgroundColor: Colors.white,
+              child: CircleAvatar(
+                radius: 45,
+                backgroundImage:
+                    avatar != null
+                        ? FileImage(avatar!) as ImageProvider
+                        : AssetImage('assets/images/avatar.png'),
+              ),
             ),
           ),
         ],
       ),
+
       bottomNavigationBar: MyBottomNavbar(),
     );
   }
 
-  Widget buildContent(String text, TextEditingController controller) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          text,
-          style: TextStyles.textSmall.copyWith(fontWeight: FontWeight.w500),
+  Widget itemProfile(String svgPath, String item, void Function()? onTap) {
+    return Padding(
+      padding: const EdgeInsets.all(8),
+      child: InkWell(
+        onTap: onTap,
+        child: Row(
+          children: [
+            // svgPath
+            SvgPicture.asset(
+              svgPath,
+              width: 28,
+              height: 28,
+              color: ColorTheme.primaryColor,
+            ),
+            SizedBox(width: 32),
+            // item
+            Text(
+              item,
+              style: TextStyle(
+                fontFamily: 'Roboto',
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 6),
-        TextField(
-          controller: controller,
-          decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: ColorTheme.disableInput),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            disabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: ColorTheme.disableInput),
-              borderRadius: BorderRadius.all(Radius.circular(8)),
-            ),
-            errorBorder: OutlineInputBorder(
-              // borderSide: BorderSide(color: ColorTheme.errorInput),
-              borderRadius: BorderRadius.all(Radius.circular(8)),
-            ),
-          ),
-          style: TextStyles.textSmall,
-        ),
-      ],
+      ),
     );
   }
 }

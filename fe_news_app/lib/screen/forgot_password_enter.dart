@@ -101,6 +101,7 @@ class _ForgotPasswordEnterState extends State<ForgotPasswordEnter> {
                         builder:
                             (context) => VerificationCode(
                               email: contactOptionController.text,
+                              isForgotPw: true,
                             ),
                       ),
                     );

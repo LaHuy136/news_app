@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:fe_news_app/components/custom_snackbar.dart';
 import 'package:fe_news_app/components/elevated_button.dart';
 import 'package:fe_news_app/page/reset_password_page.dart';
+import 'package:fe_news_app/screen/settings_security_screen.dart';
 import 'package:fe_news_app/services/auth_service.dart';
 import 'package:fe_news_app/theme/color_theme.dart';
 import 'package:fe_news_app/theme/text_styles.dart';
@@ -13,7 +14,12 @@ import 'package:pin_code_fields/pin_code_fields.dart';
 
 class VerificationCode extends StatefulWidget {
   final String email;
-  const VerificationCode({super.key, required this.email});
+  final bool isForgotPw;
+  const VerificationCode({
+    super.key,
+    required this.email,
+    this.isForgotPw = false,
+  });
 
   @override
   State<VerificationCode> createState() => _VerificationCodeState();
@@ -170,7 +176,7 @@ class _VerificationCodeState extends State<VerificationCode> {
                       color:
                           isResendAvailable
                               ? ColorTheme.primaryColor
-                              : ColorTheme.bodyText,
+                              : ColorTheme.dividerColor,
                     ),
                   ),
                 ),
@@ -193,16 +199,27 @@ class _VerificationCodeState extends State<VerificationCode> {
                       message: 'Xác thực thành công',
                       type: SnackBarType.success,
                     );
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (context) => ResetPassword(
-                              email: widget.email,
-                              code: currentCode,
-                            ),
-                      ),
-                    );
+                    widget.isForgotPw
+                        ? Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => ResetPassword(
+                                  email: widget.email,
+                                  code: currentCode,
+                                ),
+                          ),
+                        )
+                        : Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => SettingsSecurityScreen(
+                                  email: widget.email,
+                                  code: currentCode,
+                                ),
+                          ),
+                        );
                   } else {
                     showCustomSnackBar(
                       context: context,

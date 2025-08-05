@@ -1,9 +1,15 @@
+const { channel } = require("diagnostics_channel");
+
 module.exports = (sequelize, DataTypes) => {
   const News = sequelize.define('News', {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
+    },
+    channelTitle: {
+      type: DataTypes.STRING,
+      allowNull: false,
     },
     title: {
       type: DataTypes.STRING,

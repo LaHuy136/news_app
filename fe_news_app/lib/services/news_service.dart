@@ -21,4 +21,21 @@ class NewsService {
       throw Exception('Failed to load news');
     }
   }
+
+  static Future<List<dynamic>> getMixedNews(List<String> categories) async {
+    final categoryParams = categories.join(',');
+    final url = Uri.parse('$baseUrl/mixed?categories=$categoryParams');
+
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      if (json is List) {
+        return json;
+      } else {
+        throw Exception('Invalid format: response is not a list');
+      }
+    } else {
+      throw Exception('Failed to load mixed news');
+    }
+  }
 }

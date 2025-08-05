@@ -22,23 +22,58 @@ class _NewsCategoryScreenState extends State<NewsCategoryScreen>
   late TabController _tabController;
   Set<String> bookmarkedLinks = {};
 
-  final Map<String, String> categories = {
-    'the-gioi-vnexpress': 'Thế giới',
-    'thoi-su-vnexpress': 'Thời sự',
-    'giai-tri-vnexpress': 'Giải trí',
-    'the-thao-vnexpress': 'Thể thao',
-    'giao-duc-vnexpress': 'Giáo dục',
-    'suc-khoe-vnexpress': 'Sức khỏe',
-    'doi-song-vnexpress': 'Đời sống',
-    'cong-nghe-vnexpress': 'Công nghệ',
-    'xe-vnexpress': 'Xe',
-    'cuoi-vnexpress': 'Cười',
+  final Map<String, List<String>> mixedCategoryGroups = {
+    'Thế giới': [
+      'the-gioi-vnexpress',
+      'the-gioi-tuoitre',
+      // 'the-gioi-thanhnien',
+    ],
+    'Thời sự': ['thoi-su-vnexpress', 'thoi-su-tuoitre',
+    //  'thoi-su-thanhnien'
+     ],
+    'Giải trí': [
+      'giai-tri-vnexpress',
+      'giai-tri-tuoitre',
+      // 'giai-tri-thanhnien',
+    ],
+    'Thể thao': [
+      'the-thao-vnexpress',
+      'the-thao-tuoitre',
+      // 'the-thao-thanhnien',
+    ],
+    'Giáo dục': [
+      'giao-duc-vnexpress',
+      'giao-duc-tuoitre',
+      // 'giao-duc-thanhnien',
+    ],
+    'Sức khỏe': [
+      'suc-khoe-vnexpress',
+      'suc-khoe-tuoitre',
+      // 'suc-khoe-thanhnien',
+    ],
+    'Đời sống': [
+      'doi-song-vnexpress',
+      'doi-song-tuoitre',
+      // 'doi-song-thanhnien',
+    ],
+    'Công nghệ': [
+      'cong-nghe-vnexpress',
+      'cong-nghe-tuoitre',
+      // 'cong-nghe-thanhnien',
+    ],
+    'Xe': ['xe-vnexpress', 'xe-tuoitre',
+    //  'xe-thanhnien'
+     ],
+    'Cười': ['cuoi-vnexpress', 'cuoi-tuoitre'],
   };
+
+  late List<String> tabLabels;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: categories.length, vsync: this);
+    tabLabels = mixedCategoryGroups.keys.toList();
+    _tabController = TabController(length: tabLabels.length, vsync: this);
     fetchBookmarks();
   }
 
@@ -55,6 +90,60 @@ class _NewsCategoryScreenState extends State<NewsCategoryScreen>
     }
   }
 
+  String extractSource(String? channelTitle) {
+    if (channelTitle == null || channelTitle.isEmpty) return 'No source';
+
+    // Loại bỏ từ "RSS", "RSS Feed" nếu có
+    String cleaned =
+        channelTitle
+            .replaceAll(RegExp(r'RSS( Feed)?', caseSensitive: false), '')
+            .trim();
+
+    // Trường hợp: "Thế giới | Báo Thanh Niên"
+    if (cleaned.contains('|')) {
+      return cleaned.split('|').last.trim();
+    }
+
+    // Trường hợp: "Tuổi Trẻ Online - Thế giới - RSS Feed"
+    List<String> parts = cleaned.split(' - ').map((e) => e.trim()).toList();
+
+    if (parts.length >= 2) {
+      // Nếu phần đầu chứa "Tuổi Trẻ", chọn phần đầu
+      if (parts.first.toLowerCase().contains('tuổi trẻ')) {
+        return parts.first;
+      }
+      // Nếu phần cuối chứa "VnExpress", chọn phần cuối
+      if (parts.last.toLowerCase().contains('vnexpress')) {
+        return parts.last;
+      }
+    }
+
+    return cleaned;
+  }
+
+  String getSourceKey(String? channelTitle) {
+    if (channelTitle == null || channelTitle.isEmpty) return 'unknown';
+
+    final cleaned =
+        channelTitle
+            .replaceAll(RegExp(r'RSS( Feed)?', caseSensitive: false), '')
+            .trim();
+
+    if (cleaned.contains('|')) {
+      final source = cleaned.split('|').last.trim().toLowerCase();
+      if (source.contains('thanh niên')) return 'thanhnien';
+    } else if (cleaned.contains(' - ')) {
+      final parts =
+          cleaned.split(' - ').map((e) => e.trim().toLowerCase()).toList();
+      for (final part in parts) {
+        if (part.contains('vnexpress')) return 'vnexpress';
+        if (part.contains('tuổi trẻ')) return 'tuoitre';
+      }
+    }
+
+    return 'unknown';
+  }
+
   @override
   void dispose() {
     _tabController.dispose();
@@ -64,6 +153,7 @@ class _NewsCategoryScreenState extends State<NewsCategoryScreen>
   Widget buildNewsItem(dynamic item) {
     final articleLink = item['link'];
     final isBookmarked = bookmarkedLinks.contains(articleLink);
+    final sourceKey = getSourceKey(item['channelTitle']);
     return GestureDetector(
       onTap: () {
         final url = item['link'];
@@ -83,7 +173,7 @@ class _NewsCategoryScreenState extends State<NewsCategoryScreen>
         }
       },
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.only(bottom: 24),
         child: Row(
           children: [
             Container(
@@ -105,109 +195,112 @@ class _NewsCategoryScreenState extends State<NewsCategoryScreen>
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 4),
-                    Text(
-                      item['title'] ?? '',
-                      style: TextStyles.textMedium.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 4),
+                  Text(
+                    item['title'] ?? '',
+                    style: TextStyles.textMedium.copyWith(
+                      fontWeight: FontWeight.w500,
                     ),
-                    const SizedBox(height: 4),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Image.asset(
-                              'assets/images/vnexpress.png',
-                              width: 18,
-                              height: 18,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              item['source'] ?? 'VNExpress',
-                              style: TextStyles.textXSmall.copyWith(
-                                color: ColorTheme.bodyText,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Icon(Icons.access_time, size: 14),
-                            const SizedBox(width: 4),
-                            Text(
-                              formatTimeAgo(item['pubDate']),
-                              style: TextStyles.textXSmall.copyWith(
-                                color: ColorTheme.bodyText,
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        // Bookmark
-                        IconButton(
-                          icon: Icon(
-                            isBookmarked
-                                ? Icons.bookmark
-                                : Icons.bookmark_outline_outlined,
-                            size: 24,
-                            color:
-                                isBookmarked
-                                    ? ColorTheme.primaryColor
-                                    : ColorTheme.disableInput,
+                  ),
+                  // const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Image.asset(
+                            'assets/images/$sourceKey.png',
+                            width: 18,
+                            height: 18,
+                            errorBuilder: (context, error, stackTrace) {
+                              return const SizedBox(
+                                width: 18,
+                                height: 18,
+                              ); 
+                            },
                           ),
-                          onPressed: () async {
-                            final articleLink = item['link'];
-
-                            if (isBookmarked) {
-                              final success =
-                                  await BookmarkService.deleteBookmark(
-                                    articleLink,
-                                  );
-                              if (success) {
-                                setState(
-                                  () => bookmarkedLinks.remove(articleLink),
-                                );
-                                showCustomSnackBar(
-                                  context: context,
-                                  message:
-                                      'Đã xóa bài viết khỏi mục yêu thích',
-                                  type: SnackBarType.success,
-                                );
-                              }
-                            } else {
-                              final success =
-                                  await BookmarkService.createBookmark({
-                                    'title': item['title'],
-                                    'link': articleLink,
-                                    'thumbnail': item['thumbnail'],
-                                    'source': item['source'],
-                                    'pubDate': item['pubDate'],
-                                  });
-
-                              if (success) {
-                                setState(
-                                  () => bookmarkedLinks.add(articleLink),
-                                );
-                                showCustomSnackBar(
-                                  context: context,
-                                  message:
-                                      'Đã thêm bài viết vào mục yêu thích',
-                                  type: SnackBarType.success,
-                                );
-                              }
-                            }
-                          },
+                          const SizedBox(width: 4),
+                          Text(
+                            extractSource(item['channelTitle']),
+                            style: TextStyles.textXSmall.copyWith(
+                              color: ColorTheme.bodyText,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Icon(Icons.access_time, size: 14),
+                          const SizedBox(width: 4),
+                          Text(
+                            formatTimeAgo(item['pubDate']),
+                            style: TextStyles.textXSmall.copyWith(
+                              color: ColorTheme.bodyText,
+                            ),
+                          ),
+                        ],
+                      ),
+              
+                      // Bookmark
+                      IconButton(
+                        icon: Icon(
+                          isBookmarked
+                              ? Icons.bookmark
+                              : Icons.bookmark_outline_outlined,
+                          size: 24,
+                          color:
+                              isBookmarked
+                                  ? ColorTheme.primaryColor
+                                  : ColorTheme.disableInput,
                         ),
-                      ],
-                    ),
-                  ],
-                ),
+                        onPressed: () async {
+                          final articleLink = item['link'];
+              
+                          if (isBookmarked) {
+                            final success =
+                                await BookmarkService.deleteBookmark(
+                                  articleLink,
+                                );
+                            if (success) {
+                              setState(
+                                () => bookmarkedLinks.remove(articleLink),
+                              );
+                              showCustomSnackBar(
+                                context: context,
+                                message:
+                                    'Đã xóa bài viết khỏi mục yêu thích',
+                                type: SnackBarType.success,
+                              );
+                            }
+                          } else {
+                            final success =
+                                await BookmarkService.createBookmark({
+                                  'title': item['title'],
+                                  'link': articleLink,
+                                  'thumbnail': item['thumbnail'],
+                                  'source': item['source'],
+                                  'pubDate': item['pubDate'],
+                                });
+              
+                            if (success) {
+                              setState(
+                                () => bookmarkedLinks.add(articleLink),
+                              );
+                              showCustomSnackBar(
+                                context: context,
+                                message:
+                                    'Đã thêm bài viết vào mục yêu thích',
+                                type: SnackBarType.success,
+                              );
+                            }
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ],
@@ -216,9 +309,9 @@ class _NewsCategoryScreenState extends State<NewsCategoryScreen>
     );
   }
 
-  Widget buildTabContent(String category, {int? limit}) {
+  Widget buildTabContent(List<String> categories, {int? limit}) {
     return FutureBuilder<List<dynamic>>(
-      future: NewsService.getNewsByCategory(category),
+      future: NewsService.getMixedNews(categories),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(
@@ -270,18 +363,17 @@ class _NewsCategoryScreenState extends State<NewsCategoryScreen>
             indicatorSize: TabBarIndicatorSize.label,
             padding: EdgeInsets.zero,
             labelPadding: EdgeInsets.symmetric(horizontal: 12),
-            tabs: categories.values.map((label) => Tab(text: label)).toList(),
+            tabs: tabLabels.map((label) => Tab(text: label)).toList(),
           ),
         ),
       ),
       body: TabBarView(
         controller: _tabController,
         children:
-            categories.keys
-                .map(
-                  (category) => buildTabContent(category, limit: widget.limit),
-                )
-                .toList(),
+            tabLabels.map((label) {
+              final categories = mixedCategoryGroups[label] ?? [];
+              return buildTabContent(categories);
+            }).toList(),
       ),
     );
   }

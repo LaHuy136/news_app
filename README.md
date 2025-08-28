@@ -56,7 +56,7 @@ http://<YOUR_LOCAL_IP>:3000
 
 ##### Hãy dùng IP LAN, ví dụ: http://192.168.1.10:3000
 
-### 2. Cài đặt frontend
+### 3. Cài đặt frontend
 
 ```bash
 cd fe_news_app
@@ -65,7 +65,7 @@ flutter pub get
 
 ##### Cập nhật file cấu hình API URL trong Flutter:
 ```dart
-const String apiUrl = "http://<YOUR_LOCAL_IP>:3000";
+const String baseUrl = "http://<YOUR_LOCAL_IP>:3000";
 ```
 ##### Chạy ứng dụng:
 

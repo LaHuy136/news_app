@@ -1,5 +1,8 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
+import 'package:fe_news_app/bloc/bookmarks/bookmarks_bloc.dart';
+import 'package:fe_news_app/bloc/bookmarks/bookmarks_event.dart';
+import 'package:fe_news_app/bloc/bookmarks/bookmarks_state.dart';
 import 'package:fe_news_app/components/bottom_navbar.dart';
 import 'package:fe_news_app/components/custom_snackbar.dart';
 import 'package:fe_news_app/helpers/app_helper.dart';
@@ -8,6 +11,7 @@ import 'package:fe_news_app/services/bookmarks_service.dart';
 import 'package:fe_news_app/theme/color_theme.dart';
 import 'package:fe_news_app/theme/text_styles.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class BookmarksPage extends StatefulWidget {
   const BookmarksPage({super.key});
@@ -137,37 +141,39 @@ class BookmarksPageState extends State<BookmarksPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: ColorTheme.bgPrimaryColor,
-      appBar: AppBar(
+    return BlocProvider(
+      create: (_) => BookmarksBloc()..add(LoadBookmarks()),
+      child: Scaffold(
         backgroundColor: ColorTheme.bgPrimaryColor,
-        automaticallyImplyLeading: false,
-        title: Text(
-          'Mục yêu thích',
-          style: TextStyles.textLarge.copyWith(fontWeight: FontWeight.w500),
+        appBar: AppBar(
+          backgroundColor: ColorTheme.bgPrimaryColor,
+          automaticallyImplyLeading: false,
+          title: Text(
+            'Mục yêu thích',
+            style: TextStyles.textLarge.copyWith(fontWeight: FontWeight.w500),
+          ),
+          centerTitle: true,
         ),
-        centerTitle: true,
-      ),
-      body:
-          isLoading
-              ? const Center(
+        body: BlocBuilder<BookmarksBloc, BookmarkState>(
+          builder: (context, state) {
+            if (state is BookmarkLoading) {
+              return const Center(
                 child: SizedBox(
                   width: 25,
                   height: 25,
                   child: CircularProgressIndicator(
-                    color: ColorTheme.primaryColor,
                     strokeWidth: 2.5,
+                    color: ColorTheme.primaryColor,
                   ),
                 ),
-              )
-              : bookmarks.isEmpty
-              ? Center(
-                child: Text(
-                  'Không có bài viết nào được lưu',
-                  style: TextStyles.textMedium,
-                ),
-              )
-              : Column(
+              );
+            } else if (state is BookmarkLoaded) {
+              if (state.bookmarks.isEmpty) {
+                return const Center(
+                  child: Text('Không có bài viết nào được lưu'),
+                );
+              }
+              return Column(
                 children: [
                   // Search
                   buildSearchTextField(context),
@@ -369,8 +375,15 @@ class BookmarksPageState extends State<BookmarksPage> {
                     ),
                   ),
                 ],
-              ),
-      bottomNavigationBar: MyBottomNavbar(),
+              );
+            } else if (state is BookmarkError) {
+              return Center(child: Text(state.message));
+            }
+            return const SizedBox();
+          },
+        ),
+        bottomNavigationBar: MyBottomNavbar(),
+      ),
     );
   }
 

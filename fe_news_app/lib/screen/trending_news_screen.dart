@@ -52,13 +52,25 @@ class _TrendingNewsScreenState extends State<TrendingNewsScreen> {
         backgroundColor: ColorTheme.bgPrimaryColor,
         elevation: 0,
         scrolledUnderElevation: 0,
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: Icon(Icons.arrow_back_ios_new_outlined, size: 18),
+        leadingWidth: 55,
+        leading: InkWell(
+          onTap: () => Navigator.pop(context),
+          child: Container(
+            margin: EdgeInsets.only(left: 8, top: 8),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              color: ColorTheme.primaryColor,
+            ),
+            child: Icon(
+              Icons.arrow_back_rounded,
+              size: 22,
+              color: ColorTheme.bgPrimaryColor,
+            ),
+          ),
         ),
         title: Text(
           widget.title,
-          style: TextStyles.textMedium.copyWith(fontWeight: FontWeight.w600),
+          style: TextStyles.textLarge.copyWith(fontWeight: FontWeight.w500),
         ),
         centerTitle: true,
       ),

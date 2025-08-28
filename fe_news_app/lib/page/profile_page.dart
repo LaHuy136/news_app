@@ -179,7 +179,7 @@ class _ProfileState extends State<Profile> {
                 color: ColorTheme.bgPrimaryColor,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
-                  BoxShadow(blurRadius: 4, color: ColorTheme.disableInput),
+                  BoxShadow(blurRadius: 4, color: ColorTheme.primaryColor.withOpacity(0.4)),
                 ],
               ),
               child: Center(
